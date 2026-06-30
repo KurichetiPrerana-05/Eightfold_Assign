@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Eightfold — Candidate Data Loom</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#11151c; --ink-2:#171c25;
+    --paper:#f6f0e4; --paper-line:#d8cdb4;
+    --csv:#2f9e8f; --csv-dim:#1d6258;
+    --ats:#8a6fd1; --ats-dim:#5b46a3;
+    --resume:#e0954a; --resume-dim:#a86327;
+    --text-on-ink:#ece6d6; --text-dim-on-ink:#8d93a0;
+    --gold:#e3b94e; --good:#5fae7d; --bad:#c4694f;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--ink);color:var(--text-on-ink);font-family:'Inter',sans-serif;}
+  ::selection{background:var(--gold);color:var(--ink);}
+  .wrap{max-width:1180px;margin:0 auto;padding:36px 28px 80px;}
+
+  .topbar{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:18px;margin-bottom:30px;border-bottom:1px solid #232a36;padding-bottom:22px;}
+  .brand{display:flex;align-items:baseline;gap:14px;}
+  .brand h1{font-family:'Fraunces',serif;font-weight:600;font-size:30px;margin:0;color:var(--text-on-ink);}
+  .brand .mark{display:inline-flex;width:34px;height:34px;border-radius:50%;background:conic-gradient(var(--csv) 0 33%, var(--ats) 33% 66%, var(--resume) 66% 100%);position:relative;top:2px;}
+  .brand .sub{font-size:12.5px;color:var(--text-dim-on-ink);font-family:'IBM Plex Mono',monospace;letter-spacing:.03em;}
+  .sample-row{display:flex;gap:8px;align-items:center;}
+  .sample-row span{font-size:11px;color:var(--text-dim-on-ink);font-family:'IBM Plex Mono',monospace;margin-right:2px;}
+  .sample-btn{font-family:'IBM Plex Mono',monospace;font-size:11.5px;border:1px solid #2b3340;background:var(--ink-2);color:var(--text-dim-on-ink);padding:6px 11px;border-radius:20px;cursor:pointer;}
+  .sample-btn:hover{color:var(--text-on-ink);border-color:#3d4759;}
+
+  /* ---- upload zone ---- */
+  .upload-card{background:var(--ink-2);border:1px solid #232a36;border-radius:16px;padding:24px;margin-bottom:26px;}
+  .upload-card h2{font-family:'Fraunces',serif;font-size:17px;font-weight:600;margin:0 0 4px;}
+  .upload-card .hint{font-size:12.5px;color:var(--text-dim-on-ink);margin-bottom:18px;line-height:1.5;}
+  .drop-grid{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:14px;}
+  @media(max-width:860px){.drop-grid{grid-template-columns:1fr;}}
+  .text-grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:14px;}
+  @media(max-width:860px){.text-grid{grid-template-columns:1fr;}}
+  .text-field{border:1.5px dashed #323b4a;border-radius:12px;padding:14px 16px;}
+  .text-field.has-file{border-style:solid;}
+  .text-field.githubfile.has-file{border-color:#6e7c91;background:rgba(110,124,145,.06);}
+  .text-field .ttl{font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:600;color:var(--text-on-ink);margin-bottom:3px;}
+  .text-field .desc{font-size:11px;color:var(--text-dim-on-ink);margin-bottom:9px;}
+  .text-field input[type=text]{width:100%;background:#0e1218;border:1px solid #2b3340;color:var(--text-on-ink);border-radius:8px;padding:8px 10px;font-family:'IBM Plex Mono',monospace;font-size:12px;}
+  .text-field input[type=text]:focus{outline:none;border-color:var(--gold);}
+  .text-field .or-row{display:flex;align-items:center;gap:8px;margin-top:8px;}
+  .text-field .or-row span{font-size:10px;color:var(--text-dim-on-ink);font-family:'IBM Plex Mono',monospace;}
+  .text-field .zip-btn{font-family:'IBM Plex Mono',monospace;font-size:10.5px;background:#1c222e;border:1px solid #2b3340;color:var(--text-dim-on-ink);padding:5px 10px;border-radius:7px;cursor:pointer;}
+  .text-field .zip-btn:hover{color:var(--text-on-ink);}
+  .text-field .filenote{font-size:10.5px;color:var(--gold);font-family:'IBM Plex Mono',monospace;margin-top:6px;word-break:break-all;}
+  .drop{border:1.5px dashed #323b4a;border-radius:12px;padding:18px;text-align:center;cursor:pointer;transition:all .15s ease;position:relative;}
+  .drop:hover{border-color:var(--gold);background:rgba(227,185,78,.04);}
+  .drop.required{border-color:#3d4759;}
+  .drop.has-file{border-style:solid;}
+  .drop.csvfile.has-file{border-color:var(--csv);background:rgba(47,158,143,.06);}
+  .drop.atsfile.has-file{border-color:var(--ats);background:rgba(138,111,209,.06);}
+  .drop.resumefile.has-file{border-color:var(--resume);background:rgba(224,149,74,.06);}
+  .drop .ico{font-size:20px;margin-bottom:6px;}
+  .drop .ttl{font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:600;color:var(--text-on-ink);}
+  .drop .desc{font-size:11px;color:var(--text-dim-on-ink);margin-top:4px;}
+  .drop .fname{font-size:11.5px;color:var(--gold);margin-top:8px;font-family:'IBM Plex Mono',monospace;word-break:break-all;}
+  .drop input{display:none;}
+  .drop .req-tag{position:absolute;top:8px;right:10px;font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--text-dim-on-ink);text-transform:uppercase;}
+
+  .process-row{display:flex;align-items:center;justify-content:space-between;margin-top:20px;flex-wrap:wrap;gap:12px;}
+  .run-btn{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;background:var(--gold);color:#241c08;border:none;padding:11px 20px;border-radius:8px;cursor:pointer;letter-spacing:.02em;}
+  .run-btn:disabled{opacity:.4;cursor:not-allowed;}
+  .run-btn:hover:not(:disabled){filter:brightness(1.08);}
+  .status-msg{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--text-dim-on-ink);}
+  .status-msg.err{color:var(--bad);}
+
+  /* ---- pipeline rail ---- */
+  .rail-card{background:var(--ink-2);border:1px solid #232a36;border-radius:16px;padding:22px 26px;margin-bottom:30px;display:none;}
+  .rail-card.show{display:block;}
+  .rail-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+  .rail-head h2{font-family:'Fraunces',serif;font-size:16px;font-weight:600;margin:0;color:var(--text-on-ink);}
+  .rail{display:flex;align-items:center;}
+  .stage{flex:1;text-align:center;position:relative;}
+  .stage .stage-dot{width:13px;height:13px;border-radius:50%;background:#2a3140;border:2px solid #3a4252;margin:0 auto 10px;position:relative;z-index:2;transition:all .25s ease;}
+  .stage .stage-label{font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim-on-ink);transition:color .25s ease;}
+  .stage::before{content:'';position:absolute;top:6px;left:-50%;width:100%;height:2px;background:#2a3140;z-index:1;}
+  .stage:first-child::before{display:none;}
+  .stage.done .stage-dot{background:var(--gold);border-color:var(--gold);}
+  .stage.done::before{background:var(--gold);}
+  .stage.active .stage-dot{background:var(--ink-2);border-color:var(--gold);box-shadow:0 0 0 4px rgba(227,185,78,.18);}
+  .stage.done .stage-label, .stage.active .stage-label{color:var(--text-on-ink);}
+
+  .legend{display:none;gap:18px;flex-wrap:wrap;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--text-dim-on-ink);margin-bottom:22px;}
+  .legend.show{display:flex;}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .legend i{width:9px;height:9px;border-radius:2px;display:inline-block;}
+
+  .sources{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:28px;}
+  @media(max-width:1100px){.sources{grid-template-columns:repeat(3,1fr);}}
+  @media(max-width:680px){.sources{grid-template-columns:1fr;}}
+  .src-card{background:var(--paper);color:#2a2118;border-radius:14px;overflow:hidden;border:1px solid var(--paper-line);opacity:0;transform:translateY(10px);transition:opacity .45s ease, transform .45s ease;}
+  .src-card.show{opacity:1;transform:translateY(0);}
+  .src-card.absent{opacity:.35;}
+  .src-head{padding:13px 16px;display:flex;align-items:center;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;letter-spacing:.03em;color:#fff;}
+  .src-head .tag{font-size:9.5px;text-transform:uppercase;background:rgba(255,255,255,.18);padding:3px 7px;border-radius:5px;font-weight:600;}
+  .src-card.csv .src-head{background:var(--csv-dim);}
+  .src-card.ats .src-head{background:var(--ats-dim);}
+  .src-card.resume .src-head{background:var(--resume-dim);}
+  .src-card.github .src-head{background:#4b5666;}
+  .src-body{padding:14px 16px 16px;font-size:12.5px;}
+  .src-row{display:flex;gap:8px;padding:6px 0;border-bottom:1px dashed var(--paper-line);}
+  .src-row:last-child{border-bottom:none;}
+  .src-row .k{flex:0 0 84px;font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#8a7b5e;padding-top:1px;}
+  .src-row .v{flex:1;line-height:1.45;word-break:break-word;}
+  .src-row .v.null{color:#b6a988;font-style:italic;}
+  .chip-list{display:flex;flex-wrap:wrap;gap:5px;}
+  .chip{background:#fff;border:1px solid var(--paper-line);border-radius:20px;padding:2px 9px;font-size:11px;}
+  .src-card.csv .chip{border-color:var(--csv);}
+  .src-card.ats .chip{border-color:var(--ats);}
+  .src-card.resume .chip{border-color:var(--resume);}
+  .absent-note{padding:24px 16px;text-align:center;font-size:11.5px;color:#8a8f9c;font-family:'IBM Plex Mono',monospace;}
+
+  .weave{text-align:center;margin:6px 0 22px;color:var(--text-dim-on-ink);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;opacity:0;transition:opacity .4s ease;}
+  .weave.show{opacity:1;}
+  .weave svg{display:block;margin:0 auto 4px;}
+
+  .profile{background:var(--paper);color:#2a2118;border-radius:18px;padding:0;overflow:hidden;opacity:0;transform:translateY(14px);transition:opacity .5s ease .1s, transform .5s ease .1s;margin-bottom:24px;}
+  .profile.show{opacity:1;transform:translateY(0);}
+  .profile-head{background:var(--ink);color:var(--paper);padding:22px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;}
+  .profile-head h2{font-family:'Fraunces',serif;font-weight:600;font-size:22px;margin:0;}
+  .profile-head .pid{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#9aa3b3;}
+  .conf-ring{display:flex;align-items:center;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#cfd5e0;}
+  .conf-ring .bar{width:120px;height:7px;border-radius:5px;background:#2a3140;overflow:hidden;}
+  .conf-ring .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--bad),var(--gold),var(--good));}
+
+  .profile-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:0;}
+  @media(max-width:820px){.profile-grid{grid-template-columns:1fr;}}
+  .pfield{padding:14px 28px;border-bottom:1px solid var(--paper-line);}
+  .pfield .label{font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:#8a7b5e;margin-bottom:5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .pfield .val{font-size:15px;line-height:1.5;}
+  .pfield .val.empty{color:#a99c7d;font-style:italic;font-size:13px;}
+  .prov{display:inline-flex;align-items:center;gap:5px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;background:#fff;border:1px solid var(--paper-line);border-radius:20px;padding:2px 8px;color:#5a4f3a;}
+  .prov i{width:7px;height:7px;border-radius:50%;display:inline-block;}
+  .prov.csv i{background:var(--csv);} .prov.ats i{background:var(--ats);} .prov.resume i{background:var(--resume);} .prov.multi i{background:linear-gradient(90deg,var(--csv),var(--ats),var(--resume));}
+  .prov.none i{background:#c7bb9d;}
+  .left-col{border-right:1px solid var(--paper-line);}
+  @media(max-width:820px){.left-col{border-right:none;}}
+  .skill-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  .skill-row .name{flex:0 0 150px;font-size:12.5px;font-weight:600;}
+  .skill-row .bar{flex:1;height:7px;background:#e3d8bd;border-radius:5px;overflow:hidden;}
+  .skill-row .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--csv),var(--resume));}
+  .skill-row .pct{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#8a7b5e;width:34px;text-align:right;}
+  .exp-item, .edu-item{margin-bottom:12px;padding-bottom:12px;border-bottom:1px dashed var(--paper-line);}
+  .exp-item:last-child, .edu-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+  .exp-item .role{font-weight:700;font-size:13.5px;}
+  .exp-item .meta, .edu-item .meta{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#8a7b5e;margin-top:2px;}
+  .exp-item .bullets{margin:6px 0 0;padding-left:16px;font-size:12px;line-height:1.5;}
+  .exp-item .bullets li{margin-bottom:2px;}
+  .repo-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
+  .repo-tag{font-family:'IBM Plex Mono',monospace;font-size:11px;background:#1a2130;border:1px solid #4b5666;color:#c5cdd8;padding:3px 9px;border-radius:12px;}
+
+  .output-card{background:var(--ink-2);border:1px solid #232a36;border-radius:16px;opacity:0;transform:translateY(14px);transition:opacity .5s ease .18s, transform .5s ease .18s;}
+  .output-card.show{opacity:1;transform:translateY(0);}
+  .output-toggle{width:100%;background:none;border:none;color:var(--text-on-ink);padding:18px 24px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:13px;}
+  .output-toggle .chev{transition:transform .2s ease;color:var(--text-dim-on-ink);}
+  .output-toggle .badge{background:rgba(95,174,125,.15);color:var(--good);border:1px solid rgba(95,174,125,.35);font-size:10.5px;padding:2px 9px;border-radius:20px;margin-left:10px;}
+  .output-body{max-height:0;overflow:hidden;transition:max-height .35s ease;}
+  .output-body.open{max-height:900px;}
+  .output-body pre{margin:0;padding:0 24px 22px;font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.6;color:#c9d1e0;overflow-x:auto;}
+  .copy-btn{position:relative;float:right;margin:0 24px 0 0;font-family:'IBM Plex Mono',monospace;font-size:10.5px;background:#232a36;color:var(--text-dim-on-ink);border:1px solid #2e3645;padding:5px 10px;border-radius:6px;cursor:pointer;}
+  .copy-btn:hover{color:var(--text-on-ink);}
+  .jk{color:#7fa8d6;} .js{color:#c7a27a;} .jn{color:var(--gold);} .jb{color:#8a6fd1;}
+
+  .footnote{margin-top:26px;font-size:12px;color:var(--text-dim-on-ink);font-family:'IBM Plex Mono',monospace;line-height:1.7;}
+  .footnote b{color:var(--text-on-ink);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand">
+      <span class="mark"></span>
+      <div>
+        <h1>Eightfold</h1>
+        <div class="sub">detect → extract → normalize → merge → project → validate → output</div>
+      </div>
+    </div>
+    <div class="sample-row">
+      <span>or try a sample:</span>
+      <button class="sample-btn" data-sample="ATS-0001">CK · 0001</button>
+      <button class="sample-btn" data-sample="ATS-0002">ND · 0002</button>
+      <button class="sample-btn" data-sample="ATS-0003">KP · 0003</button>
+    </div>
+  </div>
+
+  <div class="upload-card">
+    <h2>Upload candidate sources</h2>
+    <div class="hint">Resume is required. CSV / ATS JSON are optional — the merge step will work with whatever you give it and mark unresolved fields openly. Everything is parsed in your browser; nothing is uploaded anywhere.</div>
+    <div class="drop-grid">
+      <label class="drop resumefile required" id="dropResume">
+        <span class="req-tag">required</span>
+        <div class="ico">📄</div>
+        <div class="ttl">Resume (PDF)</div>
+        <div class="desc">parsed client-side with pdf.js, then regex-extracted like resume_source.py</div>
+        <div class="fname" id="fnResume"></div>
+        <input type="file" accept="application/pdf" id="inputResume">
+      </label>
+      <label class="drop csvfile" id="dropCsv">
+        <div class="ico">🧾</div>
+        <div class="ttl">Recruiter CSV</div>
+        <div class="desc">optional — first matching row is used</div>
+        <div class="fname" id="fnCsv"></div>
+        <input type="file" accept=".csv,text/csv" id="inputCsv">
+      </label>
+      <label class="drop atsfile" id="dropAts">
+        <div class="ico">{ }</div>
+        <div class="ttl">ATS JSON</div>
+        <div class="desc">optional — Greenhouse / Lever / Workday-style blob</div>
+        <div class="fname" id="fnAts"></div>
+        <input type="file" accept=".json,application/json" id="inputAts">
+      </label>
+    </div>
+    <div class="text-grid">
+      <div class="text-field githubfile" id="fieldGithub">
+        <div class="ttl">🐙 GitHub</div>
+        <div class="desc">username or profile URL — calls the live public GitHub API, no auth needed</div>
+        <input type="text" id="inputGithub" placeholder="e.g. octocat or https://github.com/octocat">
+        <div class="filenote" id="fnGithub"></div>
+      </div>
+    </div>
+    <div class="process-row">
+      <button class="run-btn" id="runBtn" disabled>▶ Run pipeline</button>
+      <div class="status-msg" id="statusMsg">Upload a resume PDF to begin.</div>
+    </div>
+  </div>
+
+  <div class="rail-card" id="railCard">
+    <div class="rail-head"><h2 id="railTitle">Pipeline</h2></div>
+    <div class="rail" id="rail"></div>
+  </div>
+
+  <div class="legend" id="legend">
+    <span><i style="background:var(--csv)"></i> recruiter_csv</span>
+    <span><i style="background:var(--ats)"></i> ats_json</span>
+    <span><i style="background:var(--resume)"></i> resume (pdf.js + regex)</span>
+    <span><i style="background:#c7bb9d"></i> unresolved / no source</span>
+  </div>
+
+  <div class="sources" id="sources"></div>
+
+  <div class="weave" id="weave">
+    <svg width="220" height="34" viewBox="0 0 220 34">
+      <path d="M10 6 C 80 6, 80 17, 110 17" stroke="var(--csv)" stroke-width="2.5" fill="none"/>
+      <path d="M10 17 C 80 17, 80 17, 110 17" stroke="var(--ats)" stroke-width="2.5" fill="none"/>
+      <path d="M10 28 C 80 28, 80 17, 110 17" stroke="var(--resume)" stroke-width="2.5" fill="none"/>
+      <circle cx="110" cy="17" r="4" fill="var(--gold)"/>
+      <path d="M110 17 C 150 17, 150 17, 210 17" stroke="var(--gold)" stroke-width="2.5" fill="none"/>
+    </svg>
+    conflict resolution &amp; merge
+  </div>
+
+  <div class="profile" id="profile"></div>
+
+  <div class="output-card" id="outputCard">
+    <button class="output-toggle" id="outputToggle">
+      <span>output_profile.json <span class="badge" id="validBadge">✓ schema valid</span></span>
+      <span class="chev" id="chev">▾</span>
+    </button>
+    <div class="output-body" id="outputBody">
+      <button class="copy-btn" id="copyBtn">copy</button>
+      <pre id="jsonOut"></pre>
+    </div>
+  </div>
+
+  <div class="footnote">
+    This runs entirely in your browser: <b>pdf.js</b> extracts the PDF's text layer, then the same kind of heading-block
+    regex this repo's <b>resume_source.py</b> uses (email/phone/github patterns, SKILLS/EDUCATION/EXPERIENCE
+    section splitting) pulls out fields — no LLM, no server upload. CSV/ATS JSON are parsed directly. The merge step
+    re-implements the conflict-resolution policy from <b>README.md</b> (priority-order names, union'd emails/phones/skills,
+    longest-wins headline, max years-of-experience) so you can see the weave for <i>any</i> resume you drop in, not just
+    the three bundled samples.
+  </div>
+
+</div>
+
+<script>
+const STAGES = ["detect","extract","normalize","merge","project","validate","output"];
+
+/* Backend lives on the same origin server.py serves this file from.
+   If you open frontui.html directly as a file:// page instead of via
+   the server, change this to "http://127.0.0.1:8000". */
+const API_BASE = window.location.origin.startsWith('http') ? window.location.origin : 'http://127.0.0.1:8000';
+
+/* ---------------- state (raw inputs, sent to backend as-is) ---------------- */
+let state = {
+  resumeFile: null, resumeFileName: null,
+  csvFile: null, atsFile: null,
+  candidateId: null,
+  sampleId: null,            // set when loaded via a sample button; re-runs go through /api/sample
+  githubUsername: null,
+};
+
+/* ---------------- DOM refs ---------------- */
+const dropResume = document.getElementById('dropResume');
+const inputResume = document.getElementById('inputResume');
+const fnResume = document.getElementById('fnResume');
+const dropCsv = document.getElementById('dropCsv');
+const inputCsv = document.getElementById('inputCsv');
+const fnCsv = document.getElementById('fnCsv');
+const dropAts = document.getElementById('dropAts');
+const inputAts = document.getElementById('inputAts');
+const fnAts = document.getElementById('fnAts');
+const runBtn = document.getElementById('runBtn');
+const statusMsg = document.getElementById('statusMsg');
+
+function setStatus(msg, isErr){ statusMsg.textContent = msg; statusMsg.className = 'status-msg'+(isErr?' err':''); }
+function refreshRunBtn(){ runBtn.disabled = !(state.resumeFile || state.sampleId); }
+
+/* ---------------- file handlers — just stash the raw File, no client parsing ---------------- */
+inputResume.addEventListener('change', (e)=>{
+  const f = e.target.files[0];
+  if(!f) return;
+  state.resumeFile = f;
+  state.resumeFileName = f.name;
+  state.candidateId = 'UPLOAD-'+Date.now().toString().slice(-5);
+  state.sampleId = null;
+  fnResume.textContent = f.name;
+  dropResume.classList.add('has-file');
+  setStatus('Resume ready (' + f.name + '). Ready to run.');
+  refreshRunBtn();
+});
+
+inputCsv.addEventListener('change', (e)=>{
+  const f = e.target.files[0]; if(!f) return;
+  state.csvFile = f;
+  fnCsv.textContent = f.name; dropCsv.classList.add('has-file');
+});
+
+inputAts.addEventListener('change', (e)=>{
+  const f = e.target.files[0]; if(!f) return;
+  state.atsFile = f;
+  fnAts.textContent = f.name; dropAts.classList.add('has-file');
+});
+
+/* ---------------- GitHub text input — just a text field now,
+   the backend's github_source.py does the real work ---------------- */
+const inputGithub = document.getElementById('inputGithub');
+const fnGithub = document.getElementById('fnGithub');
+const fieldGithub = document.getElementById('fieldGithub');
+inputGithub.addEventListener('input', ()=>{
+  const val = inputGithub.value.trim();
+  state.githubUsername = val || null;
+  fnGithub.textContent = val ? `will query GitHub for: ${val}` : '';
+  fieldGithub.classList.toggle('has-file', !!val);
+  refreshRunBtn();
+});
+
+/* ---------------- sample buttons — ask the backend to run on bundled sample data ---------------- */
+document.querySelectorAll('.sample-btn').forEach(btn=>{
+  btn.addEventListener('click', async ()=>{
+    const id = btn.dataset.sample;
+    // Preserve whatever's currently typed in the GitHub box —
+    // previously this did a full state reset (githubUsername: null, etc.)
+    // which silently dropped the GitHub URL if it was typed in *before*
+    // clicking a sample button, even though the textbox still showed it.
+    const keepGithub = state.githubUsername;
+    state = {resumeFile:null, resumeFileName:id+'_resume.pdf (sample)', csvFile:null, atsFile:null, candidateId:id, sampleId:id, githubUsername:keepGithub};
+    refreshRunBtn();
+    fnResume.textContent = state.resumeFileName; dropResume.classList.add('has-file');
+    fnCsv.textContent = 'sample_recruiter.csv (server-side)'; dropCsv.classList.add('has-file');
+    fnAts.textContent = 'sample_ats.json (server-side)'; dropAts.classList.add('has-file');
+    setStatus('Loading sample '+id+' from backend…');
+    runBtn.disabled = true;
+
+    document.getElementById('railCard').classList.add('show');
+    document.getElementById('legend').classList.add('show');
+    document.getElementById('weave').classList.remove('show');
+    document.getElementById('profile').classList.remove('show');
+    document.getElementById('outputCard').classList.remove('show');
+    document.querySelectorAll('.src-card').forEach(c=>c.classList.remove('show'));
+    let i=0; renderRail(0);
+    const railTimer = setInterval(()=>{ if(i<STAGES.length-1){ i++; renderRail(i); } }, 220);
+
+    try{
+      const params = new URLSearchParams();
+      if(state.githubUsername) params.set('github', state.githubUsername);
+      const qs = params.toString();
+      const res = await fetch(`${API_BASE}/api/sample/${encodeURIComponent(id)}${qs ? '?'+qs : ''}`);
+      const data = await res.json();
+      clearInterval(railTimer);
+      if(!res.ok){ setStatus('Backend error: '+(data.error||res.status), true); runBtn.disabled=false; return; }
+      finishRun(data);
+      setStatus('Loaded sample '+id+' via backend pipeline.');
+    }catch(err){
+      clearInterval(railTimer);
+      setStatus('Could not reach backend at '+API_BASE+': '+err.message, true);
+    }
+    runBtn.disabled = false;
+  });
+});
+
+/* ---------------- run button — POST raw files to the real Python pipeline ---------------- */
+runBtn.addEventListener('click', async ()=>{
+  if(!state.resumeFile && !state.sampleId) return;
+  runBtn.disabled = true;
+  setStatus(state.sampleId ? 'Re-running sample pipeline…' : 'Uploading to pipeline…');
+
+  document.getElementById('railCard').classList.add('show');
+  document.getElementById('legend').classList.add('show');
+  document.getElementById('weave').classList.remove('show');
+  document.getElementById('profile').classList.remove('show');
+  document.getElementById('outputCard').classList.remove('show');
+  document.querySelectorAll('.src-card').forEach(c=>c.classList.remove('show'));
+
+  let i=0; renderRail(0);
+  const railTimer = setInterval(()=>{ if(i<STAGES.length-1){ i++; renderRail(i); } }, 220);
+
+  try{
+    let res, data;
+    if(state.sampleId){
+      // Loaded via a sample button — re-run against the bundled sample
+      // files, layering on whatever github text was typed in.
+      const params = new URLSearchParams();
+      if(state.githubUsername) params.set('github', state.githubUsername);
+      const qs = params.toString();
+      res = await fetch(`${API_BASE}/api/sample/${encodeURIComponent(state.sampleId)}${qs ? '?'+qs : ''}`);
+      data = await res.json();
+    } else {
+      const fd = new FormData();
+      fd.append('candidate_id', state.candidateId || ('UPLOAD-'+Date.now().toString().slice(-5)));
+      fd.append('resume', state.resumeFile);
+      if(state.csvFile) fd.append('csv', state.csvFile);
+      if(state.atsFile) fd.append('json', state.atsFile);
+      if(state.githubUsername) fd.append('github', state.githubUsername);
+      res = await fetch(`${API_BASE}/api/run`, { method:'POST', body: fd });
+      data = await res.json();
+    }
+    clearInterval(railTimer);
+    if(!res.ok){ setStatus('Pipeline error: '+(data.error||res.status), true); runBtn.disabled=false; return; }
+    finishRun(data);
+    setStatus('Pipeline complete.' + (data.warnings && data.warnings.length ? ' '+data.warnings.length+' warning(s).' : ''));
+  }catch(err){
+    clearInterval(railTimer);
+    setStatus('Could not reach backend at '+API_BASE+'. Is server.py running? ('+err.message+')', true);
+  }
+  runBtn.disabled = false;
+});
+
+function finishRun(data){
+  renderRail(STAGES.length);
+  renderSources(data);
+  document.getElementById('weave').classList.add('show');
+  renderProfile(data.output, data.profile);
+  document.getElementById('profile').classList.add('show');
+  document.getElementById('outputCard').classList.add('show');
+  renderJSON(data.output);
+  document.getElementById('profile').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+/* ---------------- rendering ---------------- */
+function el(tag, cls, html){ const e=document.createElement(tag); if(cls) e.className=cls; if(html!==undefined) e.innerHTML=html; return e; }
+function esc(s){ return (s===null||s===undefined) ? null : String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+function renderRail(activeIdx){
+  const rail = document.getElementById('rail');
+  rail.innerHTML='';
+  STAGES.forEach((s,i)=>{
+    const st = el('div','stage'+(i<activeIdx?' done':(i===activeIdx?' active':'')));
+    st.appendChild(el('div','stage-dot'));
+    st.appendChild(el('div','stage-label',s));
+    rail.appendChild(st);
+  });
+  document.getElementById('railTitle').textContent = `Pipeline — ${state.candidateId || 'candidate'}`;
+}
+
+/* Sources panel: we no longer have raw per-source field previews (that
+   parsing now happens inside the real source adapters on the backend),
+   so this shows which inputs were actually supplied plus any backend
+   warnings (e.g. a source that failed to extract). */
+function renderSources(data){
+  const wrap = document.getElementById('sources');
+  wrap.innerHTML='';
+  const warnings = data.warnings || [];
+  const failed = new Set(data.failed_sources || []);
+
+  function card(key, cls, label, provided, providedNote){
+    const failedHere = failed.has(key);
+    const c = el('div','src-card '+cls+((provided&&!failedHere)?'':' absent'));
+    const tag = failedHere ? 'extraction failed' : (provided ? 'sent to backend' : 'not provided');
+    const related = warnings.filter(w=>w.startsWith('['+key+']'));
+    c.innerHTML = `<div class="src-head"><span>${label}</span><span class="tag">${tag}</span></div>
+      <div class="src-body">
+      ${provided ? srcRow('input', esc(providedNote), false) : ''}
+      ${related.length ? related.map(w=>srcRow('warning', esc(w), false)).join('') : (provided && !failedHere ? srcRow('status','parsed by real eightfold source adapter', false) : '')}
+      ${!provided ? `<div class="absent-note">no ${label.toLowerCase()} uploaded — fields fall back to other sources</div>` : ''}
+      </div>`;
+    return c;
+  }
+
+  const cards = [
+    card('recruiter_csv','csv','Recruiter CSV', !!state.csvFile || state.candidateId && /^ATS-/.test(state.candidateId), state.csvFile? state.csvFile.name : 'sample_recruiter.csv'),
+    card('ats_json','ats','ATS JSON', !!state.atsFile || state.candidateId && /^ATS-/.test(state.candidateId), state.atsFile? state.atsFile.name : 'sample_ats.json'),
+    card('resume','resume','PDF Resume', true, state.resumeFileName),
+  ];
+  if(state.githubUsername) cards.push(card('github','github','GitHub', true, state.githubUsername));
+
+  cards.forEach(c=>wrap.appendChild(c));
+  requestAnimationFrame(()=>{ cards.forEach((c,i)=>setTimeout(()=>c.classList.add('show'), i*90)); });
+}
+
+function srcRow(k,v,isNull){
+  return `<div class="src-row"><div class="k">${k}</div><div class="v${isNull?' null':''}">${isNull? 'null' : v}</div></div>`;
+}
+
+const SRC_LABEL = {recruiter_csv:'recruiter_csv', ats_json:'ats_json', resume:'resume', github:'github', recruiter_notes:'recruiter_notes'};
+const SRC_CLASS = {recruiter_csv:'csv', ats_json:'ats', resume:'resume', github:'github'};
+
+function provChip(sourceName){
+  if(!sourceName || sourceName==='unknown'){ return `<span class="prov none"><i></i>unresolved</span>`; }
+  const cls = SRC_CLASS[sourceName] || 'none';
+  const label = SRC_LABEL[sourceName] || sourceName;
+  return `<span class="prov ${cls}"><i></i>${label}</span>`;
+}
+
+/* Build a field -> winning source lookup from the canonical profile's
+   provenance list (see schema.py / merge.py), so we can show the same
+   "which source won" chips as before, but driven by real backend data. */
+function buildProvMap(profile){
+  const map = {};
+  (profile && profile.provenance ? profile.provenance : []).forEach(p=>{
+    map[p.field] = p.source;
+  });
+  return map;
+}
+
+function renderProfile(out, profile){
+  out = out || {};
+  const prov = buildProvMap(profile || {});
+  const loc = out.location || {};
+  const links = out.links || {};
+  const skills = out.skills || [];
+  const experience = out.experience || [];
+  const education = out.education || [];
+  const overall = typeof out.overall_confidence === 'number' ? out.overall_confidence : 0;
+
+  const wrap = document.getElementById('profile');
+  let html = `<div class="profile-head">
+    <div><h2>${out.full_name? esc(out.full_name) : 'Name not resolved'}</h2><div class="pid">candidate_id: ${esc(out.candidate_id||state.candidateId)}</div></div>
+    <div class="conf-ring">overall_confidence <div class="bar"><i style="width:${overall*100}%"></i></div> ${overall}</div>
+  </div>
+  <div class="profile-grid">
+    <div class="left-col">
+      <div class="pfield"><div class="label">full_name ${provChip(prov['full_name'])}</div><div class="val${out.full_name?'':' empty'}">${out.full_name? esc(out.full_name) : 'could not be resolved from any source'}</div></div>
+      <div class="pfield"><div class="label">emails ${provChip(prov['emails'])}</div><div class="val${(out.emails&&out.emails.length)?'':' empty'}">${(out.emails&&out.emails.length)? out.emails.map(esc).join(', ') : 'no email found'}</div></div>
+      <div class="pfield"><div class="label">phones ${provChip(prov['phones'])}<span style="font-weight:400;color:#8a7b5e;"> · normalized E.164</span></div><div class="val${(out.phones&&out.phones.length)?'':' empty'}">${(out.phones&&out.phones.length)? out.phones.map(esc).join(', ') : 'no phone found'}</div></div>
+      <div class="pfield"><div class="label">location ${provChip(prov['location'])}</div><div class="val${loc.city?'':' empty'}">${loc.city? esc(loc.city)+(loc.country? ', '+esc(loc.country):'') : 'no structured source provided a location'}</div></div>
+      <div class="pfield"><div class="label">links ${provChip(prov['links']||prov['links.github'])}</div><div class="val${links.github?'':' empty'}">${
+        links.github ? `github: ${esc(links.github)}` : 'no resolvable profile URL'}</div></div>
+      ${(out.github_repos && out.github_repos.length) ? `
+      <div class="pfield"><div class="label">github repos (owned, original) ${provChip('github')}<span style="font-weight:400;color:#8a7b5e;"> · ${out.github_repos_count != null ? out.github_repos_count+' public repos total' : ''}</span></div><div class="val">
+        <div class="repo-tags">${out.github_repos.map(r=>`<span class="repo-tag">${esc(r)}</span>`).join('')}</div>
+      </div></div>` : (out.github_repos_count != null && !(out.github_forked_repos && out.github_forked_repos.length) ? `
+      <div class="pfield"><div class="label">github repos (owned, original) ${provChip('github')}</div><div class="val">${out.github_repos_count > 0 ? out.github_repos_count+' public repos (all are forks — see below)' : 'no repos found'}</div></div>` : '')}
+      ${(out.github_forked_repos && out.github_forked_repos.length) ? `
+      <div class="pfield"><div class="label">github repos (forked) ${provChip('github')}<span style="font-weight:400;color:#8a7b5e;"> · forked from someone else's project</span></div><div class="val">
+        <div class="repo-tags">${out.github_forked_repos.map(r=>`<span class="repo-tag">${esc(r)}</span>`).join('')}</div>
+      </div></div>` : ''}
+      ${(out.github_collaborated_repos && out.github_collaborated_repos.length) ? `
+      <div class="pfield"><div class="label">github repos (collaborated) ${provChip('github')}<span style="font-weight:400;color:#8a7b5e;"> · from recent public activity, best-effort</span></div><div class="val">
+        <div class="repo-tags">${out.github_collaborated_repos.map(r=>`<span class="repo-tag">${esc(r)}</span>`).join('')}</div>
+      </div></div>` : ''}
+      ${out.github_username ? `
+      <div class="pfield"><div class="label">github profile ${provChip('github')}${out.github_identity_verified===false ? ' <span style="color:var(--bad);font-family:\'IBM Plex Mono\',monospace;font-size:9.5px;">⚠ unverified</span>' : ''}</div><div class="val">
+        <div style="font-size:12.5px;line-height:1.6;">
+          <div><span style="color:#8a7b5e;">username:</span> ${esc(out.github_username)}</div>
+          ${out.github_bio ? `<div><span style="color:#8a7b5e;">bio:</span> ${esc(out.github_bio)}</div>` : ''}
+          ${out.github_location_raw ? `<div><span style="color:#8a7b5e;">location:</span> ${esc(out.github_location_raw)}</div>` : ''}
+          ${(out.github_languages && out.github_languages.length) ? `<div style="margin-top:4px;"><span style="color:#8a7b5e;">languages:</span> <span class="chip-list" style="display:inline-flex;">${out.github_languages.map(l=>`<span class="chip">${esc(l)}</span>`).join('')}</span></div>` : ''}
+        </div>
+        ${out.github_identity_warning ? `<div style="margin-top:8px;padding:8px 10px;background:rgba(196,105,79,.1);border:1px solid rgba(196,105,79,.35);border-radius:8px;font-size:11.5px;color:#9a4a32;">⚠ ${esc(out.github_identity_warning)}</div>` : ''}
+      </div></div>` : ''}
+      <div class="pfield"><div class="label">headline ${provChip(prov['headline'])}<span style="font-weight:400;color:#8a7b5e;"> · longest_value wins</span></div><div class="val${out.headline?'':' empty'}" style="font-size:13px;">${out.headline? esc(out.headline) : 'no profile/summary section detected'}</div></div>
+      <div class="pfield"><div class="label">years_experience ${provChip(prov['years_experience'])}<span style="font-weight:400;color:#8a7b5e;"> · derived from work span</span></div><div class="val">${out.years_experience>0? out.years_experience+' yrs' : '0 — no dated work history found'}</div></div>
+    </div>
+    <div class="right-col">
+      <div class="pfield"><div class="label">skills ${provChip('resume')}<span style="font-weight:400;color:#8a7b5e;"> · union, confidence = source coverage</span></div><div class="val">
+        ${skills.length? skills.slice(0,9).map(s=>`<div class="skill-row"><div class="name">${esc(s.name)}</div><div class="bar"><i style="width:${(s.confidence||0)*100}%"></i></div><div class="pct">${Math.round((s.confidence||0)*100)}%</div></div>`).join('') : '<span class="val empty">no skills resolved</span>'}
+        ${skills.length>9? `<div style="font-size:11px;color:#8a7b5e;margin-top:2px;">+${skills.length-9} more skills merged</div>`:''}
+      </div></div>
+      <div class="pfield"><div class="label">experience ${provChip('ats_json')}</div><div class="val">
+        ${experience.length? experience.map(e=>`<div class="exp-item"><div class="role">${esc(e.title)||'role unknown'} · ${esc(e.company)||'company unknown'}</div><div class="meta">${esc(e.start)||'?'} → ${esc(e.end)||'?'}</div>${e.summary? `<ul class="bullets"><li>${esc(e.summary)}</li></ul>`:''}</div>`).join('') : '<span class="val empty">no work history declared</span>'}
+      </div></div>
+      <div class="pfield" style="border-bottom:none;"><div class="label">education ${provChip('ats_json')}</div><div class="val">
+        ${education.length? education.map(e=>`<div class="edu-item"><div class="role">${esc(e.degree)||esc(e.institution)}</div><div class="meta">${e.degree? esc(e.institution):''} ${e.end_year? '· '+e.end_year : ''} ${e.field? '· '+esc(e.field):''}</div></div>`).join('') : '<span class="val empty">no education found</span>'}
+      </div></div>
+    </div>
+  </div>`;
+  wrap.innerHTML = html;
+}
+
+function renderJSON(out){
+  function syntaxHighlight(json){
+    json = json.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function(match){
+      let cls = 'jn';
+      if(/^"/.test(match)){ cls = /:$/.test(match) ? 'jk' : 'js'; }
+      else if(/true|false/.test(match)){ cls='jb'; }
+      return '<span class="'+cls+'">'+match+'</span>';
+    });
+  }
+  const str = JSON.stringify(out, null, 2);
+  document.getElementById('jsonOut').innerHTML = syntaxHighlight(str);
+  window.__lastJSON = str;
+}
+
+document.getElementById('outputToggle').addEventListener('click', ()=>{
+  const body = document.getElementById('outputBody');
+  const open = !body.classList.contains('open');
+  body.classList.toggle('open', open);
+  document.getElementById('chev').style.transform = open ? 'rotate(180deg)' : 'rotate(0deg)';
+});
+document.getElementById('copyBtn').addEventListener('click', ()=>{
+  navigator.clipboard.writeText(window.__lastJSON || '');
+  const b = document.getElementById('copyBtn'); const old=b.textContent;
+  b.textContent='copied'; setTimeout(()=>b.textContent=old, 1100);
+});
+</script>
+</body>
+</html>

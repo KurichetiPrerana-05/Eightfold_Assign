@@ -1,0 +1,138 @@
+[
+    {
+        "candidate_id": "candidate_1_resume",
+        "applicant_id": "ATS-0001",
+        "applicant_name": "Chenna Kushala Sree",
+        "contact_email": "kushalasree111@gmail.com",
+        "mobile_number": "9390683321",
+        "current_employer": "Infotact Solutions",
+        "position_held": "Intern, Cyber Security",
+        "profile_summary": "Detail-oriented cybersecurity student with hands-on experience in vulnerability assessment and web application penetration testing. Passionate about ethical hacking and emerging technologies, with a strong commitment to continuous learning and applying security best practices to protect digital systems.",
+        "location": {
+            "city_name": "Coimbatore",
+            "country_name": "India"
+        },
+        "social_profiles": {
+            "github": "https://github.com/Chennakushalasree/Chennakushalasree"
+        },
+        "skill_tags": [
+            "Programming Languages \u2014 C",
+            "C++",
+            "Python"
+        ],
+        "work_history": [
+            {
+                "employer": "Infotact Solutions",
+                "role": "Intern, Cyber Security",
+                "from_date": "2025-05",
+                "to_date": "2025-07",
+                "description": null
+            }
+        ],
+        "academic_records": [
+            {
+                "school": "Amrita Vishwa Vidyapeetam",
+                "qualification": "BTech",
+                "Course": "CYS",
+                "graduation_year": 2027
+            },
+            {
+                "school": "Bhashyam School",
+                "qualification": "Secondary",
+                "location": "Guntur",
+                "graduation_year": 2021
+            }
+        ]
+    },
+    {
+        "candidate_id": "candidate_2_resume",
+        "applicant_id": "ATS-0002",
+        "applicant_name": "Nithya Sai Dodla",
+        "contact_email": "nithyasaid@gmail.com",
+        "mobile_number": "+91 7993407087",
+        "current_employer": null,
+        "position_held": null,
+        "profile_summary": "Motivated B.Tech student in Artificial Intelligence with a strong foundation in programming, problem-solving, and software development. Experienced in building applications across multiple domains \u2014 from system-level C programming and hardware integration to data-driven Python projects. Comfortable working across the software development lifecycle and eager to learn emerging technologies.",
+        "location": {
+            "city_name": "Coimbatore",
+            "country_name": "India"
+        },
+        "social_profiles": {
+            "github": "https://github.com/NithyaSai-Dodla"
+        },
+        "skill_tags": [
+            "C++",
+            "Python",
+            "Java",
+            "Assembly",
+            "HTML",
+            "CSS"
+        ],
+        "work_history": [],
+        "academic_records": [
+            {
+                "school": "Amrita Vishwa Vidyapeetam",
+                "qualification": "BTech",
+                "Course": "AIE",
+                "graduation_year": 2027
+            },
+            {
+                "school": "Sri Chaitanya School",
+                "qualification": "Secondary",
+                "location": "Hyderabad",
+                "graduation_year": 2021
+            }
+        ]
+    },
+    {
+        "candidate_id": "candidate_3_resume",
+        "applicant_id": "ATS-0003",
+        "applicant_name": "Kuricheti Prerana",
+        "contact_email": "preranakuricheti18@gmail.com",
+        "mobile_number": "+91 89193 42535",
+        "current_employer": "RBG.ai",
+        "position_held": "AI Engineer Intern",
+        "profile_summary": "AI Engineering student (CGPA 9.06/10) with hands-on experience building production-grade Retrieval-Augmented Generation (RAG) pipelines, multi-agent systems, and LLM-powered applications. Skilled in hybrid retrieval, vector databases, and backend engineering.",
+        "location": {
+            "city_name": "Coimbatore",
+            "country_name": "India"
+        },
+        "social_profiles": {
+            "github": "https://github.com/KurichetiPrerana-05"
+        },
+        "skill_tags": [
+            "Python",
+            "C++",
+            "JavaScript",
+            "Scala",
+            "AI",
+            "Machine Learning",
+            "Deep Learning",
+            "Computer Vision",
+            "Signal & Image Processing"
+        ],
+        "work_history": [
+            {
+                "employer": "RBG.ai",
+                "role": "AI Engineer Intern",
+                "from_date": "2026-04",
+                "to_date": "2026-06",
+                "description": null
+            }
+        ],
+        "academic_records": [
+            {
+                "school": "Amrita Vishwa Vidyapeetam",
+                "qualification": "BTech",
+                "Course": "AIE",
+                "graduation_year": 2027
+            },
+            {
+                "school": "Sri Chaitanya School",
+                "qualification": "Secondary",
+                "location": "Vijayawada",
+                "graduation_year": 2021
+            }
+        ]
+    }
+]
